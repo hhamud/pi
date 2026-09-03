@@ -1,0 +1,110 @@
+name: Publish @hhamud/pi-ai to npm
+
+# Triggered on push to main when packages/ai/** or the opencode snapshot
+# changed. Bumps the patch version in packages/ai/package.json, rebuilds
+# the package, and publishes to npm under the @hhamud/pi-ai scope with
+# provenance attestation.
+#
+# Required secrets (configure in repo Settings → Secrets and variables):
+#   NPM_PUBLISH_TOKEN  — npm automation token (publish scope) or a
+#                        fine-grained PAT with packages:write on @hhamud.
+#
+# The version in packages/ai/package.json is bumped on every successful
+# publish (e.g. 0.84.4 → 0.84.5), so users always see a fresh release.
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "packages/ai/**"
+      - "packages/ai/src/providers/opencode-snapshot.json"
+      - ".github/workflows/publish-pi-ai.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  # id-token: write is required for npm provenance attestation.
+  id-token: write
+
+concurrency:
+  # Don't run two publishes in parallel — npm rejects duplicate versions.
+  group: publish-pi-ai
+  cancel-in-progress: false
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    environment: npm-publish
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+          fetch-depth: 0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: 22
+          cache: npm
+          registry-url: "https://registry.npmjs.org"
+
+      - name: Install dependencies
+        run: npm ci --ignore-scripts
+
+      - name: Read current version
+        id: version
+        run: |
+          current=$(node -p "require('./packages/ai/package.json').version")
+          echo "current=$current" >> "$GITHUB_OUTPUT"
+
+      - name: Bump patch version
+        id: bump
+        run: |
+          node -e '
+            const fs = require("fs");
+            const path = "packages/ai/package.json";
+            const pkg = JSON.parse(fs.readFileSync(path, "utf8"));
+            const parts = pkg.version.split(".").map(n => parseInt(n, 10));
+            parts[2] = (parts[2] || 0) + 1;
+            pkg.version = parts.join(".");
+            fs.writeFileSync(path, JSON.stringify(pkg, null, "\t") + "\n");
+            console.log("Bumped to " + pkg.version);
+          '
+          new_version=$(node -p "require('./packages/ai/package.json').version")
+          echo "new_version=$new_version" >> "$GITHUB_OUTPUT"
+
+      - name: Commit version bump
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add packages/ai/package.json
+          # Only commit if there's actually a diff (manual triggers with
+          # no version change shouldn't create empty commits).
+          if git diff --cached --quiet; then
+            echo "No version change to commit."
+          else
+            git commit -m "chore(ai): bump version to ${{ steps.bump.outputs.new_version }}"
+            git push origin HEAD:main
+          fi
+
+      - name: Build @hhamud/pi-ai
+        # Runs generate-models (refreshing from models.dev) + build:offline,
+        # which bakes the opencode-snapshot.json-derived data into dist/.
+        run: npm --prefix packages/ai run build
+
+      - name: Verify package contents
+        run: |
+          echo "Files that will be published:"
+          npm --prefix packages/ai pack --dry-run 2>&1 | tail -30
+
+      - name: Publish to npm
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_PUBLISH_TOKEN }}
+        run: |
+          cd packages/ai
+          # provenance is set in publishConfig; --access public is also
+          # covered by publishConfig, but passing both is harmless and
+          # makes the intent explicit in the log.
+          npm publish --provenance --access public
+          echo "Published @hhamud/pi-ai@${{ steps.bump.outputs.new_version }}"

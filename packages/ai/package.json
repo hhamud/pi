@@ -1,5 +1,5 @@
 {
-	"name": "@earendil-works/pi-ai",
+	"name": "@hhamud/pi-ai",
 	"version": "0.84.4",
 	"description": "Unified LLM API with automatic model discovery and provider configuration",
 	"type": "module",
@@ -89,8 +89,12 @@
 	"license": "MIT",
 	"repository": {
 		"type": "git",
-		"url": "git+https://github.com/earendil-works/pi.git",
+		"url": "git+https://github.com/hhamud/pi.git",
 		"directory": "packages/ai"
+	},
+	"publishConfig": {
+		"access": "public",
+		"provenance": true
 	},
 	"engines": {
 		"node": ">=22.19.0"
