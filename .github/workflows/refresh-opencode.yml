@@ -1,0 +1,97 @@
+name: Refresh OpenCode Model Catalog
+
+# Daily cron that regenerates the opencode/opencode-go model catalog from
+# models.dev, writes a tracked snapshot, and opens a PR if anything changed.
+# Merging the PR triggers .github/workflows/publish-pi-ai.yml which bumps
+# the version and publishes a new @hhamud/pi-ai to npm.
+
+on:
+  # 6am UTC daily.
+  schedule:
+    - cron: "0 6 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pull-requests: write
+
+concurrency:
+  # Serialize refresh runs so two daily triggers don't race to open a PR.
+  group: refresh-opencode
+  cancel-in-progress: true
+
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          # No PAT needed for commits back to a PR on the same repo, but
+          # persist-credentials keeps the default GITHUB_TOKEN scoped to
+          # this run only.
+          persist-credentials: false
+
+      - name: Setup Node.js
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install system deps for tsgo / generate-models
+        # The generate-models script pulls models.dev via fetch and doesn't
+        # need Cairo etc., but the rest of the monorepo does. Keep this
+        # step for parity with ci.yml so a follow-up "verify on the
+        # snapshot" job (if added) would Just Work.
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libcairo2-dev libpango1.0-dev libjpeg-dev libgif-dev librsvg2-dev fd-find ripgrep
+          sudo ln -s $(which fdfind) /usr/local/bin/fd || true
+
+      - name: Install dependencies
+        run: npm ci --ignore-scripts
+
+      - name: Regenerate model catalog from models.dev
+        run: npm --prefix packages/ai run generate-models
+
+      - name: Write tracked snapshot
+        # Reads src/providers/data/opencode{,-go}.json (the gitignored
+        # output of the previous step) and writes the diff-friendly,
+        # committed packages/ai/src/providers/opencode-snapshot.json.
+        run: node packages/ai/scripts/snapshot-opencode.mjs
+
+      - name: Check for changes
+        id: diff
+        run: |
+          if git diff --quiet -- packages/ai/src/providers/opencode-snapshot.json; then
+            echo "changed=false" >> "$GITHUB_OUTPUT"
+            echo "No catalog changes since last refresh."
+          else
+            changed_count=$(git diff --numstat -- packages/ai/src/providers/opencode-snapshot.json | awk '{s+=$1+$2} END {print s}')
+            echo "changed=true" >> "$GITHUB_OUTPUT"
+            echo "lines_changed=$changed_count" >> "$GITHUB_OUTPUT"
+            echo "Catalog changed ($changed_count lines). Opening PR."
+
+      - name: Validate snapshot JSON
+        if: steps.diff.outputs.changed == 'true'
+        run: node -e "JSON.parse(require('fs').readFileSync('packages/ai/src/providers/opencode-snapshot.json','utf8')); console.log('snapshot JSON parses OK')"
+
+      - name: Open pull request
+        if: steps.diff.outputs.changed == 'true'
+        uses: peter-evans/create-pull-request@5f6978faf089d4d20b00c7766989d076bb2fc7f1 # v8.1.1
+        with:
+          commit-message: "chore(ai): refresh opencode model catalog"
+          title: "chore(ai): refresh opencode model catalog"
+          body: |
+            Automated refresh of the OpenCode model catalog from
+            [models.dev](https://models.dev).
+
+            - Trigger: ${{ github.event_name }} (${{ github.ref }})
+            - Snapshot diff: ${{ steps.diff.outputs.lines_changed }} lines changed
+            - Generated at: see `generatedAt` in `opencode-snapshot.json`
+
+            Merging this PR will trigger `.github/workflows/publish-pi-ai.yml`
+            to bump the version and publish a new `@hhamud/pi-ai` to npm.
+          branch: chore/refresh-opencode-models
+          delete-branch: true
+          signoff: true
