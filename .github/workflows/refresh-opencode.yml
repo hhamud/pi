@@ -71,6 +71,7 @@ jobs:
             echo "changed=true" >> "$GITHUB_OUTPUT"
             echo "lines_changed=$changed_count" >> "$GITHUB_OUTPUT"
             echo "Catalog changed ($changed_count lines). Opening PR."
+          fi
 
       - name: Validate snapshot JSON
         if: steps.diff.outputs.changed == 'true'
