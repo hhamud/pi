@@ -22,7 +22,7 @@ on:
   workflow_dispatch:
 
 permissions:
-  contents: read
+  contents: write
   # id-token: write is required for npm provenance attestation.
   id-token: write
 
@@ -39,7 +39,8 @@ jobs:
       - name: Checkout
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
-          persist-credentials: false
+          # Persist the GITHUB_TOKEN so the version-bump commit step can push.
+          persist-credentials: true
           fetch-depth: 0
 
       - name: Setup Node.js
@@ -85,7 +86,11 @@ jobs:
             echo "No version change to commit."
           else
             git commit -m "chore(ai): bump version to ${{ steps.bump.outputs.new_version }}"
-            git push origin HEAD:main
+            # Use the built-in ACTIONS_BOT_PAT-equivalent credential helper
+            # left in place by actions/checkout when persist-credentials: true.
+            # The x-access-token form works for both fine-grained PATs and
+            # the auto-generated GITHUB_TOKEN.
+            git push "https://x-access-token:${GITHUB_TOKEN}@github.com/${GITHUB_REPOSITORY}.git" HEAD:main
           fi
 
       - name: Build @hhamud/pi-ai
