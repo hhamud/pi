@@ -1,9 +1,19 @@
 name: Refresh OpenCode Model Catalog
 
 # Daily cron that regenerates the opencode/opencode-go model catalog from
-# models.dev, writes a tracked snapshot, and opens a PR if anything changed.
-# Merging the PR triggers .github/workflows/publish-pi-ai.yml which bumps
-# the version and publishes a new @hhamud/pi-ai to npm.
+# models.dev and writes a tracked snapshot. If the snapshot changed, the
+# workflow commits the change directly to main; the push then triggers
+# .github/workflows/publish-pi-ai.yml which bumps the version and
+# publishes a new @hhamud/pi-ai to npm.
+#
+# We commit to main rather than opening a PR because GitHub disables
+# PR creation from GITHUB_TOKEN by default on personal repos (the toggle
+# "Allow GitHub Actions to create and approve pull requests" lives in the
+# repo's Settings → Actions → General and is intentionally not exposed in
+# any public REST or GraphQL API). Direct commit keeps the pipeline
+# fully automated; the diff is still reviewable on the resulting commit.
+# To switch to a PR-based flow, enable that UI toggle in the repo
+# settings and restore the peter-evans/create-pull-request step.
 
 on:
   # 6am UTC daily.
@@ -13,10 +23,9 @@ on:
 
 permissions:
   contents: write
-  pull-requests: write
 
 concurrency:
-  # Serialize refresh runs so two daily triggers don't race to open a PR.
+  # Serialize refresh runs so two daily triggers don't race to commit.
   group: refresh-opencode
   cancel-in-progress: true
 
@@ -27,10 +36,10 @@ jobs:
       - name: Checkout
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
-          # No PAT needed for commits back to a PR on the same repo, but
-          # persist-credentials keeps the default GITHUB_TOKEN scoped to
-          # this run only.
-          persist-credentials: false
+          # Persist the GITHUB_TOKEN so the final commit step can push.
+          persist-credentials: true
+          # Full history so `git diff` against HEAD works.
+          fetch-depth: 0
 
       - name: Setup Node.js
         uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
@@ -38,11 +47,9 @@ jobs:
           node-version: 22
           cache: npm
 
-      - name: Install system deps for tsgo / generate-models
-        # The generate-models script pulls models.dev via fetch and doesn't
-        # need Cairo etc., but the rest of the monorepo does. Keep this
-        # step for parity with ci.yml so a follow-up "verify on the
-        # snapshot" job (if added) would Just Work.
+      - name: Install system deps
+        # generate-models doesn't strictly need Cairo, but matching ci.yml
+        # means we can add a verify job in the future without surprises.
         run: |
           sudo apt-get update
           sudo apt-get install -y libcairo2-dev libpango1.0-dev libjpeg-dev libgif-dev librsvg2-dev fd-find ripgrep
@@ -70,29 +77,20 @@ jobs:
             changed_count=$(git diff --numstat -- packages/ai/src/providers/opencode-snapshot.json | awk '{s+=$1+$2} END {print s}')
             echo "changed=true" >> "$GITHUB_OUTPUT"
             echo "lines_changed=$changed_count" >> "$GITHUB_OUTPUT"
-            echo "Catalog changed ($changed_count lines). Opening PR."
+            echo "Catalog changed ($changed_count lines). Committing to main."
           fi
 
       - name: Validate snapshot JSON
         if: steps.diff.outputs.changed == 'true'
         run: node -e "JSON.parse(require('fs').readFileSync('packages/ai/src/providers/opencode-snapshot.json','utf8')); console.log('snapshot JSON parses OK')"
 
-      - name: Open pull request
+      - name: Commit and push
         if: steps.diff.outputs.changed == 'true'
-        uses: peter-evans/create-pull-request@5f6978faf089d4d20b00c7766989d076bb2fc7f1 # v8.1.1
-        with:
-          commit-message: "chore(ai): refresh opencode model catalog"
-          title: "chore(ai): refresh opencode model catalog"
-          body: |
-            Automated refresh of the OpenCode model catalog from
-            [models.dev](https://models.dev).
-
-            - Trigger: ${{ github.event_name }} (${{ github.ref }})
-            - Snapshot diff: ${{ steps.diff.outputs.lines_changed }} lines changed
-            - Generated at: see `generatedAt` in `opencode-snapshot.json`
-
-            Merging this PR will trigger `.github/workflows/publish-pi-ai.yml`
-            to bump the version and publish a new `@hhamud/pi-ai` to npm.
-          branch: chore/refresh-opencode-models
-          delete-branch: true
-          signoff: true
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add packages/ai/src/providers/opencode-snapshot.json
+          git commit -m "chore(ai): refresh opencode model catalog" \
+            -m "Trigger: ${{ github.event_name }} (${{ github.ref }})" \
+            -m "Snapshot diff: ${{ steps.diff.outputs.lines_changed }} lines changed"
+          git push origin HEAD:main
