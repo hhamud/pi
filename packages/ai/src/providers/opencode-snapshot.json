@@ -1,5 +1,5 @@
 {
-	"generatedAt": "2026-09-03T23:04:21.437Z",
+	"generatedAt": "2026-09-04T11:21:51.943Z",
 	"opencode": {
 		"big-pickle": {
 			"api": "openai-completions",
@@ -2240,6 +2240,38 @@
 				"minimal": "minimal",
 				"off": null,
 				"xhigh": "xhigh"
+			}
+		},
+		"omen-alpha": {
+			"api": "openai-completions",
+			"baseUrl": "https://opencode.ai/zen/go/v1",
+			"compat": {
+				"maxTokensField": "max_tokens",
+				"supportsDeveloperRole": false,
+				"supportsStore": false
+			},
+			"contextWindow": 500000,
+			"cost": {
+				"cacheRead": 0.04,
+				"cacheWrite": 0,
+				"input": 0.2,
+				"output": 0.66
+			},
+			"input": [
+				"text",
+				"image"
+			],
+			"maxTokens": 128000,
+			"name": "Omen Alpha",
+			"reasoning": true,
+			"thinkingLevelMap": {
+				"high": "high",
+				"low": "low",
+				"max": null,
+				"medium": null,
+				"minimal": null,
+				"off": null,
+				"xhigh": null
 			}
 		},
 		"qwen3.6-plus": {
