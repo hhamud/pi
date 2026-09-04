@@ -73,6 +73,33 @@ internal imports to `@hhamud/pi-ai`, add an `NPM_PUBLISH_TOKEN` repo
 secret, and replace the final `Create GitHub Release` step with
 `npm publish --provenance --access public`.
 
+## Important caveat: the CLI bundle
+
+`@earendil-works/pi-coding-agent`'s **bundle** hardcodes the
+opencode catalog directly into
+`dist/bundle/chunks/chunk-OMWWHBTG.js`. That means installing the
+fork's `@earendil-works/pi-ai` tarball alone is not enough — the
+global `pi` CLI will continue to show only the upstream catalog
+until the bundle itself is rebuilt against the new pi-ai dist.
+
+The `Publish @earendil-works/pi-ai (fork build)` workflow currently
+**does not rebuild the bundle**. A second tarball that ships a
+rebuilt `pi-coding-agent` is planned but not yet implemented.
+Until that lands, the daily refresh is verifiable via
+`packages/ai/src/providers/opencode-snapshot.json` and the
+`dist/providers/data/opencode.json` baked into the release tarball,
+but the CLI picker won't show new models until either:
+
+1. A coding-agent tarball ships in the release (planned), or
+2. You rebuild the bundle locally:
+   ```sh
+   bun install
+   npm --prefix packages/ai run build
+   npm --prefix packages/coding-agent run build
+   ```
+   and reinstall `@earendil-works/pi-coding-agent` from your local
+   checkout.
+
 ## Install (consume the auto-updated package)
 
 The tarball is at
