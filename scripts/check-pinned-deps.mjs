@@ -23,7 +23,13 @@ function collectPackageJsonFiles(directory) {
 }
 
 function isInternalWorkspaceDependency(name) {
-	return name.startsWith("@earendil-works/pi-") || internalPackageNames.has(name);
+	// Both the upstream @earendil-works/pi-* packages and the fork's
+	// @hhamud/pi-* packages count as internal workspace dependencies.
+	return (
+		name.startsWith("@earendil-works/pi-") ||
+		name.startsWith("@hhamud/pi-") ||
+		internalPackageNames.has(name)
+	);
 }
 
 function isNonRegistrySpecifier(specifier) {

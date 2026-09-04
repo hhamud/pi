@@ -12,6 +12,9 @@ const rootLockfilePath = join(repoRoot, "package-lock.json");
 const outputPackageJsonPath = join(outputDir, "package.json");
 const outputLockfilePath = join(outputDir, "package-lock.json");
 const internalPackagePrefix = "@earendil-works/pi-";
+// @hhamud/pi-ai is the fork of @earendil-works/pi-ai and must also be
+// treated as an internal package for install-lock generation.
+const internalPackagePrefixes = [internalPackagePrefix, "@hhamud/pi-"];
 const internalPackageNames = new Set(["@earendil-works/chord"]);
 const installPackageName = "@earendil-works/pi-coding-agent-install";
 const allowedInstallScriptPackages = new Map([
@@ -145,7 +148,7 @@ function getInternalWorkspaces(lockPackages) {
 		if (!lockPath.startsWith("packages/") || lockPath.includes("/node_modules/") || !entry.name || !entry.version) {
 			continue;
 		}
-		if (!entry.name.startsWith(internalPackagePrefix) && !internalPackageNames.has(entry.name)) {
+		if (!internalPackagePrefixes.some((p) => entry.name.startsWith(p)) && !internalPackageNames.has(entry.name)) {
 			continue;
 		}
 
@@ -298,7 +301,7 @@ function validateGeneratedFiles(installerPackageJson, installLock, internalNames
 		}
 		if (
 			packageName !== undefined &&
-			(packageName.startsWith(internalPackagePrefix) || internalPackageNames.has(packageName)) &&
+			(internalPackagePrefixes.some((p) => packageName.startsWith(p)) || internalPackageNames.has(packageName)) &&
 			entry.version !== installerPackageJson.version
 		) {
 			errors.push(`${lockPath} internal package version ${entry.version} does not match ${installerPackageJson.version}`);

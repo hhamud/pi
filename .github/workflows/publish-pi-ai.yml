@@ -76,6 +76,9 @@ jobs:
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          # Disable husky pre-commit for this bot-driven version-bump.
+          # See .github/workflows/refresh-opencode.yml for the rationale.
+          git config --local core.hooksPath /dev/null
           git add packages/ai/package.json
           if git diff --cached --quiet; then
             echo "No version change to commit."

@@ -10,6 +10,9 @@ const codingAgentDir = join(repoRoot, "packages/coding-agent");
 const rootLockfilePath = join(repoRoot, "package-lock.json");
 const shrinkwrapPath = join(codingAgentDir, "npm-shrinkwrap.json");
 const internalPackagePrefix = "@earendil-works/pi-";
+// @hhamud/pi-ai is the fork of @earendil-works/pi-ai and must also be
+// treated as an internal package for shrinkwrap generation.
+const internalPackagePrefixes = [internalPackagePrefix, "@hhamud/pi-"];
 const internalPackageNames = new Set(["@earendil-works/chord"]);
 const allowedInstallScriptPackages = new Map([
 	["@google/genai@1.52.0", "preinstall is a no-op in the published package"],
@@ -138,7 +141,7 @@ function getInternalWorkspaces(lockPackages) {
 		if (!lockPath.startsWith("packages/") || lockPath.includes("/node_modules/") || !entry.name || !entry.version) {
 			continue;
 		}
-		if (!entry.name.startsWith(internalPackagePrefix) && !internalPackageNames.has(entry.name)) {
+		if (!internalPackagePrefixes.some((p) => entry.name.startsWith(p)) && !internalPackageNames.has(entry.name)) {
 			continue;
 		}
 
