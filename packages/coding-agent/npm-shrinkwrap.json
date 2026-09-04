@@ -11,7 +11,7 @@
 			"dependencies": {
 				"@earendil-works/chord": "^0.84.4",
 				"@earendil-works/pi-agent-core": "^0.84.4",
-				"@hhamud/pi-ai": "^0.84.4",
+				"@hhamud/pi-ai": "0.84.8",
 				"@earendil-works/pi-client": "^0.84.4",
 				"@earendil-works/pi-protocol": "^0.84.4",
 				"@earendil-works/pi-tui": "^0.84.4",
@@ -494,7 +494,7 @@
 			"license": "MIT",
 			"dependencies": {
 				"@earendil-works/chord": "^0.84.4",
-				"@hhamud/pi-ai": "^0.84.4",
+				"@hhamud/pi-ai": "0.84.8",
 				"@earendil-works/pi-telemetry": "^0.84.4",
 				"diff": "8.0.4",
 				"ignore": "7.0.5",
