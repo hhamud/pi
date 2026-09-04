@@ -113,3 +113,7 @@ MIT
   <br /><br />
   <a href="https://exe.dev"><img src="packages/coding-agent/docs/images/exy.png" alt="Exy mascot" width="48" /><br />exe.dev</a>
 </p>
+
+> **Fork note**: this is a personal fork. See [`docs/FORK.md`](docs/FORK.md) for
+> what changed, how the daily catalog refresh works, and how to install
+> the auto-updated `@earendil-works/pi-ai` package.
