@@ -28,17 +28,16 @@ jobs:
         with:
           persist-credentials: false
 
-      - name: Setup Node.js
-        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@1f49ccd76b6f7a72fe15d8177cf6c1e426945a97 # v2.2.0
         with:
-          node-version: 22
-          cache: npm
+          bun-version: latest
 
       - name: Install dependencies
-        run: npm ci --ignore-scripts
+        run: bun install
 
       - name: Regenerate model catalog from models.dev
-        run: npm --prefix packages/ai run generate-models
+        run: cd packages/ai && bun run generate-models
 
       - name: Write tracked snapshot
         # Reads src/providers/data/opencode{,-go}.json (the gitignored
