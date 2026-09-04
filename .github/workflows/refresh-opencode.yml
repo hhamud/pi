@@ -94,11 +94,19 @@ jobs:
           # a 06:00 UTC schedule run races against the publish workflow's
           # version-bump commit and fails with '[rejected] HEAD -> main
           # (fetch first)'.
+          # Order matters: stash the uncommitted snapshot change first
+          # (git rebase refuses to run on a dirty tree), then rebase,
+          # then pop the stash and commit.
+          git stash push --include-untracked -- packages/ai/src/providers/opencode-snapshot.json
           git fetch origin main
           git rebase origin/main
+          git stash pop
           git add packages/ai/src/providers/opencode-snapshot.json
-          git commit -m "chore(ai): refresh opencode model catalog" \
-            -m "Trigger: ${{ github.event_name }} (${{ github.ref }})" \
-            -m "Snapshot diff: ${{ steps.diff.outputs.lines_changed }} lines changed" \
-            || echo "No changes after rebase; nothing to commit."
-          git push "https://x-access-token:${GITHUB_TOKEN}@github.com/${GITHUB_REPOSITORY}.git" HEAD:main
+          if git diff --cached --quiet; then
+            echo "No snapshot change after rebase; nothing to commit."
+          else
+            git commit -m "chore(ai): refresh opencode model catalog" \
+              -m "Trigger: ${{ github.event_name }} (${{ github.ref }})" \
+              -m "Snapshot diff: ${{ steps.diff.outputs.lines_changed }} lines changed"
+            git push "https://x-access-token:${GITHUB_TOKEN}@github.com/${GITHUB_REPOSITORY}.git" HEAD:main
+          fi
