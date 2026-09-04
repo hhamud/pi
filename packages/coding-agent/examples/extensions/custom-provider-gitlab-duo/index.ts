@@ -21,7 +21,7 @@ import {
 	openAIResponsesApi,
 	type SimpleStreamOptions,
 	type ThinkingLevelMap,
-} from "@earendil-works/pi-ai/compat";
+} from "@hhamud/pi-ai/compat";
 import type { ExtensionAPI } from "@earendil-works/pi-coding-agent";
 
 // =============================================================================

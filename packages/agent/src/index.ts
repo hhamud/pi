@@ -1,4 +1,4 @@
-export { uuidv7 } from "@earendil-works/pi-ai";
+export { uuidv7 } from "@hhamud/pi-ai";
 export type {
 	AttributeValue,
 	ExactTelemetryAttributes,

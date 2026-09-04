@@ -1,5 +1,5 @@
-import type { Usage } from "@earendil-works/pi-ai";
-import { uuidv7 } from "@earendil-works/pi-ai/utils/uuid";
+import type { Usage } from "@hhamud/pi-ai";
+import { uuidv7 } from "@hhamud/pi-ai/utils/uuid";
 import type { Context } from "../../context.ts";
 import type { FileError, FileSystem, Result } from "../../types.ts";
 import { insertUsage } from "../commit.ts";

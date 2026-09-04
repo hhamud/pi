@@ -32,7 +32,7 @@ import type {
 	TextContent,
 	ToolResultMessage,
 	Usage,
-} from "@earendil-works/pi-ai";
+} from "@hhamud/pi-ai";
 import type {
 	AutocompleteItem,
 	AutocompleteProvider,

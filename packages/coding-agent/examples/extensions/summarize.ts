@@ -1,4 +1,4 @@
-import { uuidv7 } from "@earendil-works/pi-ai";
+import { uuidv7 } from "@hhamud/pi-ai";
 import type { ExtensionAPI, ExtensionCommandContext } from "@earendil-works/pi-coding-agent";
 import { DynamicBorder, getMarkdownTheme } from "@earendil-works/pi-coding-agent";
 import { Container, Markdown, matchesKey, Text } from "@earendil-works/pi-tui";

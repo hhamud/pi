@@ -9,7 +9,7 @@ import {
 	EventStream,
 	type ToolResultMessage,
 	validateToolArguments,
-} from "@earendil-works/pi-ai";
+} from "@hhamud/pi-ai";
 import { getDefaultStreamFn } from "./stream-fn.ts";
 import type {
 	AgentContext,

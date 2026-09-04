@@ -13,7 +13,7 @@
  */
 
 import type { AgentMessage } from "@earendil-works/pi-agent-core";
-import { type Message, uuidv7 } from "@earendil-works/pi-ai";
+import { type Message, uuidv7 } from "@hhamud/pi-ai";
 import type { ExtensionAPI, SessionEntry } from "@earendil-works/pi-coding-agent";
 import { BorderedLoader, convertToLlm, serializeConversation } from "@earendil-works/pi-coding-agent";
 

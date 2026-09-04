@@ -8,7 +8,7 @@ import {
 	type Model,
 	type SimpleStreamOptions,
 	type UserMessage,
-} from "@earendil-works/pi-ai";
+} from "@hhamud/pi-ai";
 import { NOOP_TELEMETRY_CONTEXT } from "@earendil-works/pi-telemetry";
 import { describe, expect, it } from "vitest";
 import { BACKGROUND_CONTEXT, withAbortSignal } from "../../src/harness/context.ts";

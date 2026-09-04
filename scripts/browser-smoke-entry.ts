@@ -1,6 +1,6 @@
 import { Client } from "@earendil-works/pi-client";
-import { createAssistantMessageEventStream, Type } from "@earendil-works/pi-ai";
-import { complete, getModel, getProviders, streamSimple } from "@earendil-works/pi-ai/compat";
+import { createAssistantMessageEventStream, Type } from "@hhamud/pi-ai";
+import { complete, getModel, getProviders, streamSimple } from "@hhamud/pi-ai/compat";
 import {
 	Agent,
 	bashExecutionToText,

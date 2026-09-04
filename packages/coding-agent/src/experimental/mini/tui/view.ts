@@ -6,7 +6,7 @@
  */
 
 import type { AgentMessage, Entry, LaneSnapshot } from "@earendil-works/pi-agent-core";
-import type { AssistantMessage, AuthEvent } from "@earendil-works/pi-ai";
+import type { AssistantMessage, AuthEvent } from "@hhamud/pi-ai";
 import {
 	type Component,
 	Container,

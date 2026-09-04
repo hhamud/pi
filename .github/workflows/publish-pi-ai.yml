@@ -1,20 +1,16 @@
-name: Publish @earendil-works/pi-ai (fork build)
+name: Publish @hhamud/pi-ai to npm
 
 # Triggered on push to main when packages/ai/** or the opencode snapshot
 # changed. Bumps the patch version in packages/ai/package.json, rebuilds
-# the package, and uploads a tarball to a GitHub Release.
+# the package, and publishes to npm under the @hhamud/pi-ai scope with
+# provenance attestation.
 #
-# Why a GitHub Release (not npm publish):
-# The fork keeps the package name @earendil-works/pi-ai to avoid invasive
-# renames across the 270+ files in the monorepo that import it. Publishing
-# that name to npm would collide with the upstream package, which the
-# user does not own. A GitHub Release is the next-best auto-distribution
-# channel: the user installs via a stable release URL, and the workflow
-# is fully automated end-to-end.
+# Required secrets (configure in repo Settings → Secrets and variables):
+#   NPM_PUBLISH_TOKEN — npm automation token (publish scope) or a
+#                       fine-grained PAT with packages:write on @hhamud.
 #
-# Install (after first release):
-#   bun add -g https://github.com/hhamud/pi/releases/download/<tag>/earendil-works-pi-ai-<version>.tgz
-#   npm install -g https://github.com/hhamud/pi/releases/download/<tag>/earendil-works-pi-ai-<version>.tgz
+# The version in packages/ai/package.json is bumped on every successful
+# publish (e.g. 0.84.4 → 0.84.5), so users always see a fresh release.
 
 on:
   push:
@@ -27,14 +23,18 @@ on:
 
 permissions:
   contents: write
+  # id-token: write is required for npm provenance attestation.
+  id-token: write
 
 concurrency:
+  # Don't run two publishes in parallel — npm rejects duplicate versions.
   group: publish-pi-ai
   cancel-in-progress: false
 
 jobs:
-  release:
+  publish:
     runs-on: ubuntu-latest
+    environment: npm-publish
     steps:
       - name: Checkout
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -47,6 +47,7 @@ jobs:
         with:
           node-version: 22
           cache: npm
+          registry-url: "https://registry.npmjs.org"
 
       - name: Install dependencies
         run: npm ci --ignore-scripts
@@ -72,7 +73,6 @@ jobs:
           '
           new_version=$(node -p "require('./packages/ai/package.json').version")
           echo "new_version=$new_version" >> "$GITHUB_OUTPUT"
-          echo "tag=v$new_version" >> "$GITHUB_OUTPUT"
 
       - name: Commit version bump
         run: |
@@ -86,44 +86,15 @@ jobs:
             git push "https://x-access-token:${GITHUB_TOKEN}@github.com/${GITHUB_REPOSITORY}.git" HEAD:main
           fi
 
-      - name: Build @earendil-works/pi-ai
+      - name: Build @hhamud/pi-ai
         # Runs generate-models (refreshing from models.dev) + build:offline,
         # which bakes the opencode-snapshot.json-derived data into dist/.
         run: npm --prefix packages/ai run build
 
-      - name: Pack tarball
-        working-directory: packages/ai
+      - name: Publish to npm
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_PUBLISH_TOKEN }}
         run: |
-          npm pack
-          mv earendil-works-pi-ai-${{ steps.bump.outputs.new_version }}.tgz \
-             /tmp/earendil-works-pi-ai-${{ steps.bump.outputs.new_version }}.tgz
-
-      - name: Upload tarball as workflow artifact
-        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
-        with:
-          name: earendil-works-pi-ai-${{ steps.bump.outputs.new_version }}
-          path: /tmp/earendil-works-pi-ai-${{ steps.bump.outputs.new_version }}.tgz
-          if-no-files-found: error
-          retention-days: 30
-
-      - name: Create GitHub Release
-        uses: softprops/action-gh-release@efb35369e0ad2afab669f228072c1b0d510eae64 # v3.0.3
-        with:
-          tag_name: ${{ steps.bump.outputs.tag }}
-          name: ${{ steps.bump.outputs.tag }}
-          body: |
-            Auto-built snapshot of `@earendil-works/pi-ai` from
-            [hhamud/pi](https://github.com/hhamud/pi).
-
-            Contains the regenerated OpenCode model catalog from
-            [models.dev](https://models.dev), baked into the
-            `dist/providers/data/` directory at build time.
-
-            Install:
-            ```
-            bun add -g https://github.com/hhamud/pi/releases/download/${{ steps.bump.outputs.tag }}/earendil-works-pi-ai-${{ steps.bump.outputs.new_version }}.tgz
-            ```
-          files: /tmp/earendil-works-pi-ai-${{ steps.bump.outputs.new_version }}.tgz
-          fail_on_unmatched_files: true
-          draft: false
-          prerelease: false
+          cd packages/ai
+          npm publish --provenance --access public
+          echo "Published @hhamud/pi-ai@${{ steps.bump.outputs.new_version }} to npm"

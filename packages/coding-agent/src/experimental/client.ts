@@ -1,6 +1,6 @@
 import { resolve } from "node:path";
 import { BACKGROUND_CONTEXT, type LaneWatchEvent } from "@earendil-works/pi-agent-core";
-import type { AssistantMessage } from "@earendil-works/pi-ai";
+import type { AssistantMessage } from "@hhamud/pi-ai";
 import type { ClientCommand } from "../cli/experimental/commands/client.ts";
 import { activateBuiltinClientServices, openClientRuntime } from "./client-runtime.ts";
 import type { AgentOperationResponse } from "./services/agent-controller.ts";

@@ -1,5 +1,5 @@
 import type { AgentMessage, Entry, LaneSnapshot } from "@earendil-works/pi-agent-core";
-import type { AssistantMessage } from "@earendil-works/pi-ai";
+import type { AssistantMessage } from "@hhamud/pi-ai";
 import { Container, Spacer, Text, TruncatedText, type TUI } from "@earendil-works/pi-tui";
 import { createAllToolRenderers } from "../core/tools/renderers/index.ts";
 import { AssistantMessageComponent } from "../modes/interactive/components/assistant-message.ts";

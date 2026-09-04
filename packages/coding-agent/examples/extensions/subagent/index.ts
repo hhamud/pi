@@ -17,8 +17,8 @@ import * as fs from "node:fs";
 import * as os from "node:os";
 import * as path from "node:path";
 import type { AgentToolResult, ThinkingLevel } from "@earendil-works/pi-agent-core";
-import type { Message } from "@earendil-works/pi-ai";
-import { StringEnum } from "@earendil-works/pi-ai";
+import type { Message } from "@hhamud/pi-ai";
+import { StringEnum } from "@hhamud/pi-ai";
 import {
 	CONFIG_DIR_NAME,
 	type ExtensionAPI,

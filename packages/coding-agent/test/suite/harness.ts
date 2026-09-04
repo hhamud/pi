@@ -13,8 +13,8 @@ import type {
 	FauxProviderRegistration,
 	FauxResponseStep,
 	Model,
-} from "@earendil-works/pi-ai/compat";
-import { registerFauxProvider, streamSimple } from "@earendil-works/pi-ai/compat";
+} from "@hhamud/pi-ai/compat";
+import { registerFauxProvider, streamSimple } from "@hhamud/pi-ai/compat";
 import { AgentSession, type AgentSessionEvent } from "../../src/core/agent-session.ts";
 import { AuthStorage } from "../../src/core/auth-storage.ts";
 import type { ExtensionRunner } from "../../src/core/extensions/index.ts";

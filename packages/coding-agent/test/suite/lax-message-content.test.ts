@@ -8,7 +8,7 @@
  */
 
 import type { AgentMessage, AgentToolResult } from "@earendil-works/pi-agent-core";
-import { fauxAssistantMessage, fauxToolCall } from "@earendil-works/pi-ai";
+import { fauxAssistantMessage, fauxToolCall } from "@hhamud/pi-ai";
 import { Type } from "typebox";
 import { describe, expect, it } from "vitest";
 import { type SessionEntry, sessionEntryToContextMessages } from "../../src/core/session-manager.ts";

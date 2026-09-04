@@ -16,7 +16,7 @@ This is the home of the Pi agent harness project including our self extensible c
 
 * **[@earendil-works/pi-coding-agent](packages/coding-agent)**: Interactive coding agent CLI
 * **[@earendil-works/pi-agent-core](packages/agent)**: Agent runtime with tool calling and state management
-* **[@earendil-works/pi-ai](packages/ai)**: Unified multi-provider LLM API (OpenAI, Anthropic, Google, …)
+* **[@hhamud/pi-ai](packages/ai)**: Unified multi-provider LLM API (OpenAI, Anthropic, Google, …)
 
 To learn more about Pi:
 
@@ -29,7 +29,7 @@ To learn more about Pi:
 |---------|-------------|
 | **[@earendil-works/chord](packages/chord)** | Standalone application-composition runtime for services, replicated state, RPC, and plugins |
 | **[@earendil-works/pi-telemetry](packages/telemetry)** | Vendor-neutral telemetry contracts, reference adapter, conformance tests, and typed schemas |
-| **[@earendil-works/pi-ai](packages/ai)** | Unified multi-provider LLM API (OpenAI, Anthropic, Google, etc.) |
+| **[@hhamud/pi-ai](packages/ai)** | Unified multi-provider LLM API (OpenAI, Anthropic, Google, etc.) |
 | **[@earendil-works/pi-agent-core](packages/agent)** | Agent runtime with tool calling and state management |
 | **[@earendil-works/pi-coding-agent](packages/coding-agent)** | Interactive coding agent CLI |
 | **[@earendil-works/pi-tui](packages/tui)** | Terminal UI library with differential rendering |
@@ -116,4 +116,4 @@ MIT
 
 > **Fork note**: this is a personal fork. See [`docs/FORK.md`](docs/FORK.md) for
 > what changed, how the daily catalog refresh works, and how to install
-> the auto-updated `@earendil-works/pi-ai` package.
+> the auto-updated `@hhamud/pi-ai` package.

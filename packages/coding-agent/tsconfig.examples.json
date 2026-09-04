@@ -6,7 +6,7 @@
 			"@earendil-works/pi-coding-agent": ["./src/index.ts"],
 			"@earendil-works/pi-coding-agent/hooks": ["./src/core/hooks/index.ts"],
 			"@earendil-works/pi-tui": ["../tui/src/index.ts"],
-			"@earendil-works/pi-ai": ["../ai/src/index.ts"],
+			"@hhamud/pi-ai": ["../ai/src/index.ts"],
 			"typebox": ["../../node_modules/typebox"]
 		},
 		"skipLibCheck": true

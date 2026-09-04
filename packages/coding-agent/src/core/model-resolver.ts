@@ -9,7 +9,7 @@ import {
 	type KnownProvider,
 	type Model,
 	modelsAreEqual,
-} from "@earendil-works/pi-ai";
+} from "@hhamud/pi-ai";
 import chalk from "chalk";
 import { minimatch } from "minimatch";
 import { isValidThinkingLevel } from "../cli/args.ts";
